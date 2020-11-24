@@ -1,0 +1,6 @@
+[submodule "website/bedrock/web/app/plugins/che-wp-stack-placeholder-plugin"]
+	path = website/bedrock/web/app/plugins/che-wp-stack-placeholder-plugin
+	url = https://github.com/Mbd06b/che-wp-stack-placeholder-plugin
+[submodule "website/bedrock/web/app/themes/twentytwentyone_child"]
+	path = website/bedrock/web/app/themes/twentytwentyone_child
+	url = https://github.com/Mbd06b/twentytwentyone_child
