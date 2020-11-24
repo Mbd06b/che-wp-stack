@@ -1,0 +1,74 @@
+metadata:
+  name: che-wp-stack
+components:
+  - mountSources: false
+    endpoints:
+      - name: che-wp-db
+        port: 3306
+        attributes:
+          discoverable: 'true'
+    memoryLimit: 1G
+    type: dockerimage
+    image: docker.io/centos/mysql-57-centos7
+    alias: mysql
+    env:
+      - value: rootuser
+        name: MYSQL_USER
+      - value: password
+        name: MYSQL_PASSWORD
+      - value: password
+        name: MYSQL_ROOT_PASSWORD
+      - value: dev_database
+        name: MYSQL_DATABASE
+  - id: redhat/php/latest
+    memoryLimit: 2G
+    type: chePlugin
+  - id: redhat/php-debugger/latest
+    memoryLimit: 1G
+    type: chePlugin
+  - mountSources: true
+    endpoints:
+      - name: 8080-tcp
+        port: 8080
+    memoryLimit: 1G
+    type: dockerimage
+    volumes:
+      - name: composer
+        containerPath: /home/user/.composer
+    image: 'save.worscipe.com:5050/che-php-7.4-wp:1.4.5'
+    alias: php
+apiVersion: 1.0.0
+commands:
+  - name: Start Apache Web Server
+    actions:
+      - type: exec
+        command: service apache2 start && tail -f
+        component: php
+  - name: Stop Apache Web Server
+    actions:
+      - type: exec
+        command: service apache2 stop
+        component: php
+  - name: Restart Apache Web Server
+    actions:
+      - type: exec
+        command: service apache2 restart
+        component: php
+  - name: Wordpress Update Composer
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}/website/bedrock'
+        type: exec
+        command: composer update
+        component: php
+  - name: Snapshot database
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}/mysql'
+        type: exec
+        command: sqldump -u username -p password starter_database > starter_database.sql
+        component: sql
+  - name: Configure database
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}/mysql'
+        type: exec
+        command: sed -i 's/localhost/127.0.0.1/g' db-init-config.php && php db-init.php
+        component: php
